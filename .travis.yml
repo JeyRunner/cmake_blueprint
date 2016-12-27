@@ -6,12 +6,12 @@ compiler:
 - gcc
 
 before_install:
-- sudo apt-get update -qq
+#- sudo apt-get update -qq
 
 install:
 
 before_script:
-- cmake ..
+- cmake .
 
 script: make
 
