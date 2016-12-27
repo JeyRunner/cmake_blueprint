@@ -22,6 +22,7 @@ set(META_NAME_VERSION        "${META_PROJECT_NAME} v${META_VERSION} (${META_VERS
 set(INSTALL_BIN         bin)
 set(INSTALL_LIB         lib)
 set(INSTALL_INCLUDE     include)
+set(INSTALL_INSTALLER   build)
 set(INSTALL_COMPONENTS  applications libraries headers)
 
 # ------------------------------------
@@ -38,9 +39,9 @@ option(OPTION_BUILD_EXAMPLES            "Build examples."                       
 # set project name and output dir
 project(${META_PROJECT_NAME})
 setOutDir(
-        build/bin
-        build/lib
-        build/installer)
+        build
+        build
+        build)
 
 # default dirs for targets
 set(SOURCE_DIR  source/)
@@ -58,7 +59,7 @@ if(UNIX)
     SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${META_PROJECT_AUTHOR})
 endif()
 
-SET(CPACK_OUTPUT_FILE_PREFIX build/install)
+SET(CPACK_OUTPUT_FILE_PREFIX            ${INSTALL_INSTALLER})
 set(CPACK_COMPONENTS_ALL                ${INSTALL_COMPONENTS})
 set(CPACK_PACKAGE_NAME                  ${META_PROJECT_NAME})
 set(CPACK_PACKAGE_VENDOR                "")
