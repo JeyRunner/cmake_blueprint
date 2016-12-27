@@ -19,7 +19,7 @@ after_success: make package
 
 
 before_deploy:
-  - export RELEASE_FILES=$(ls */install/*.deb */bin/* */lib/*.so)
+  - export RELEASE_FILES=$(ls */install/*.deb */bin/*)
   - echo "deploying $RELEASE_FILES to GitHub releases"
 deploy:
   provider: releases
