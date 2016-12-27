@@ -1,0 +1,32 @@
+language: cpp
+sudo: required
+dist: trusty
+
+
+compiler:
+  - gcc
+
+before_install:
+  - sudo apt-get update -qq
+
+install:
+  #- sudo apt-get install -qq gcc-avr binutils-avr avr-libc
+
+before_script:
+    - mkdir build
+    - cd build
+    - cmake ..
+
+script: make
+
+
+# deploy
+befor_deploy:
+  "echo 'go!"
+deploy:
+  provider: releases
+  api_key: "GITHUB OAUTH TOKEN"
+  file: "FILE TO UPLOAD"
+  skip_cleanup: true
+  on:
+    tags: true
