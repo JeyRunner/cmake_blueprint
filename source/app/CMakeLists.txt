@@ -1,5 +1,5 @@
 # Target
-set(TARGET app)
+set(TARGET ${META_NAME_VERSION}-Linux)
 set(SRC)
 
 

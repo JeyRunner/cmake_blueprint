@@ -13,16 +13,15 @@ set(META_PROJECT_NAME        "bluePrintCmake")
 set(META_PROJECT_DESCRIPTION "blue print cmake for c++")
 set(META_PROJECT_AUTHOR      "Joshua Johannson")
 set(META_VERSION_MAJOR       "1")
-set(META_VERSION_MINOR       "0")
-set(META_VERSION_PATCH       "2")
+set(META_VERSION_MINOR       "1")
+set(META_VERSION_PATCH       "1")
 set(META_VERSION             "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}")
-set(META_NAME_VERSION        "${META_PROJECT_NAME} v${META_VERSION} (${META_VERSION_REVISION})")
+set(META_NAME_VERSION        "${META_PROJECT_NAME}-${META_VERSION}")
 
 # install
 set(INSTALL_BIN         bin)
 set(INSTALL_LIB         lib)
 set(INSTALL_INCLUDE     include)
-set(INSTALL_INSTALLER   build)
 set(INSTALL_COMPONENTS  applications libraries headers)
 
 # ------------------------------------
@@ -38,10 +37,13 @@ option(OPTION_BUILD_EXAMPLES            "Build examples."                       
 
 # set project name and output dir
 project(${META_PROJECT_NAME})
+
+# set out dirs
 setOutDir(
-        build
-        build
-        build)
+        build   # bin
+        build   # lib
+        build)  # archiv
+set(OUT_INSTALLER build)
 
 # default dirs for targets
 set(SOURCE_DIR  source/)
@@ -59,7 +61,7 @@ if(UNIX)
     SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${META_PROJECT_AUTHOR})
 endif()
 
-SET(CPACK_OUTPUT_FILE_PREFIX            ${INSTALL_INSTALLER})
+SET(CPACK_OUTPUT_FILE_PREFIX            ${OUT_INSTALLER})
 set(CPACK_COMPONENTS_ALL                ${INSTALL_COMPONENTS})
 set(CPACK_PACKAGE_NAME                  ${META_PROJECT_NAME})
 set(CPACK_PACKAGE_VENDOR                "")
