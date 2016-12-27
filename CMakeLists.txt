@@ -7,16 +7,19 @@ SET(META_EXTRUTABLE_NAME    ${META_PROJECT_NAME})
 
 SET(SRC_DIR                 src/)
 SET(OUT_DIR                 bin/)
+SET(TARGET                  ${META_PROJECT_NAME})
 
 # set stuff
 PROJECT(bluePrint_cmake)
 FILE(GLOB SRC_FILES
         ${SRC_DIR}*.cpp
         ${SRC_DIR}*.h)
-setOutupDir(${OUT_DIR})
+
+# set output directories
+setOutDir(bin)
 
 
 # extrutable
 add_executable(
-        ${META_PROJECT_NAME}
+        ${TARGET}
         ${SRC_FILES})
