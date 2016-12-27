@@ -27,8 +27,8 @@ deploy:
   provider: releases
   api_key:
     secure: i0uOI5oNLYq4+k6EyxHvj7IsIbUER8Awm7/ocO4bujij6mDx0uIbNzOvYBdc6nOcyxRGcuJnWS4ry7hFkt230/rm5FnjyC2+Gud1XC5TWMOkLA4co+nf+JtpYdcfU469ReT0g5T602bdmZqAegVTQSD3SmsCpntjclyn9UNuvPZS84p6VPNjHTXmzmH6+ldpVM/iTGu7zy9i0g9JkAmgCaKuNu8sQ8q1nwUlxPiCqiQhj6JhE+ONsrfSgfRKNCrSB6yGiJpfBvSBC2Pgp4czoM/L3eRhOwsnP6GkC8GwhhoUNY8F7zMVe0VO5z5URp6EapVZOGptMGg6Abv81o1gVPrA+x/sQvJyO0MHAxG7/kmUa6vNthwpmDf0QBknJk0OPMhjwndZvEOhh5DWxfJ4006oU9Mm6ose3xs0wNgwxUB9pcX7ffJMuDcWyHPyGBb0BCBEs9s6SndCnfzqbxMRCTqbyDu46vDYoO/LK5/Oz06MLdzYHUEjBGHB5NLrljq1wM4zgSS6UfD7nZJ/XDbZF/yrG+6QuJ/ITWK0s0/ZRUZtEY1efzniOKbiieUl9PPVdk8CQukG48jHW5e2e1lZQI7ZEzmUx+uvuK1YA3cFjECDnVz2zcSUFoakcwkSCLp7a8dOVJSc2sES2OYEPBvw1zzQjXWbSBKhOPNzn7yMQJk=
+  file:  "build/install/*.deb"
   file_glob: true
-  file:  "build/install/bluePrintCmake-1.0.2-Linux.deb build/bin/app" #"*/install/*.deb */bin/* */lib/*.so"
   skip_cleanup: true
   #on:
   #  tags: true
