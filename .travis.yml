@@ -28,5 +28,5 @@ deploy:
   files:  "build/install/*.deb build/bin/*"
   file_glob: true
   skip_cleanup: true
-  #on:
-  #  tags: true
+  on:
+    tags: true
