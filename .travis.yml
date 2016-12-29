@@ -1,5 +1,5 @@
 language: cpp
-sudo: required
+#sudo: required
 dist: trusty
 
 compiler:
@@ -10,7 +10,7 @@ compiler:
 
 #install:
 
-script: ./build.py --android 25 --native
+script: python build.py --android 25 --native
 
 
 before_deploy:
