@@ -9,6 +9,8 @@ file(GLOB SRC_FILES
         ${INCLUDE_DIR}*.h)
 
 
+set(ANDROID_PACKAGE_NAME "com.blueprint.cmake")
+
 #
 # extrutable / Lib
 #
@@ -20,6 +22,9 @@ if (ANDROID)
     set_target_properties(
             ${TARGET} PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_LIB}/${ANDROID_NDK_ABI_NAME})
+
+    string(REGEX REPLACE "\\." "_" ANDROID_PACKAGE_ ${ANDROID_PACKAGE_NAME})
+    add_definitions( -DANDROID_FUNC_PREFIX=Java_${})
 else ()
     add_executable(
             ${TARGET}

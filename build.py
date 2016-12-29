@@ -17,16 +17,23 @@ ANDROID_TOOLCHAIN = 'cmake/android.toolchain.cmake'
 
 error = False
 packing = True
+androidRun = False
+androidInstall = False
 
 
 def main(argv):
-    global packing
+    global packing, androidInstall, androidRun
 
     parser = OptionParser()
     parser.add_option("-a", "--android", dest="android",
                       help="cross compile for all ABI for android API('android-NUMBER')", metavar="API")
     parser.add_option("--androidABI", dest="androidAbi",
                       help="set static abi for android compile", metavar="ABI")
+    parser.add_option("--androidInstall", dest="androidInstall", action="store_true",
+                      help="install app", metavar="ABI")
+    parser.add_option("--androidRun", dest="androidRun", action="store_true",
+                      help="run app", metavar="ABI")
+
 
     parser.add_option("-w", "--windows", dest="windows", action="store_true",
                       help="cross compile for windows (coming soon)")
@@ -39,13 +46,18 @@ def main(argv):
                       help="not create package android application, only compile")
     (options, args) = parser.parse_args()
 
+    # remove old
+    shutil.rmtree('build/')
+
     # go into build dir
     if not os.path.exists('build/'):
         os.makedirs('build/')
     os.chdir('build/')
 
-    if (options.noPack is not None):
-        packing = False
+
+    packing = options.noPack is None
+    androidInstall = options.androidInstall is not None
+    androidRun = options.androidRun is not None
 
     # check
     if (options.android is not None):
@@ -70,7 +82,7 @@ def main(argv):
 
 # ANDROID
 def crossAndroid(api, abi):
-    global packing
+    global packing, androidInstall, androidRun
     #cleanCmake()
 
     if (abi == ''):
@@ -95,11 +107,19 @@ def crossAndroid(api, abi):
         if ok:
             okABIs += abi + ", "
 
+
+
     okApk = False
     if (okABIs != ''):
         if (packing):
             printCol("\n[ANDROID] create apk", CYAN)
-            okApk = run(['make', 'BuildApk'])
+
+            if androidInstall:
+                okApk = run(['make', 'InstallApk'])
+            elif androidRun:
+                okApk = run(['make', 'RunApk'])
+            else:
+                okApk = run(['make', 'BuildApk'])
     else:
         setError(True)
 
@@ -107,6 +127,7 @@ def crossAndroid(api, abi):
     print("\n[ANDROID] -- summary ----------------------------------")
     printOk("[ANDROID] " + ("SUCCESSFULLY build for '" + okABIs + "'" if (okABIs != '') else 'ERROR'), okABIs != '')
     printOk("[ANDROID] build APK %s " % ('SUCCESSFULLY' if okApk else 'ERROR'), okApk)
+
 
 
 # WINDOWS

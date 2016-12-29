@@ -4,7 +4,11 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
+#include <jni.h>
 using namespace std;
+
+#define as(x) #x
 
 int main(int argCount, char *args[])
 {
@@ -12,4 +16,29 @@ int main(int argCount, char *args[])
          argCount, args[0]);
 
   exit(42);
+}
+
+
+template<typename T>
+std::string to_string(T value)
+{
+  std::ostringstream os;
+  os << value;
+  return os.str();
+}
+
+
+extern "C"
+jstring
+Java_com_blueprint_cmake_main_stringFromJNI(
+    JNIEnv* env,
+    jobject /* this */, int howmuch) {
+
+  string a = "";
+  for (int i = 0; i < howmuch; ++i) {
+    a+= to_string(i) + "_";
+  }
+  std::string hello = a;
+
+  return env->NewStringUTF(hello.c_str());
 }
