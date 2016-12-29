@@ -8,26 +8,35 @@ import sys, getopt, os, glob, shutil
 from subprocess import call
 
 # VAR
-ANDROID_ABIS = ['armeabi', 'armeabi-v7a'
-                # 'armeabi-v7a with NEON', 'armeabi-v7a with VFPV3',
-                # 'armeabi-v6 with VFP',
-                # 'x86',
-                # 'arm64-v8a', 'x86_64', 'mips64']
-                ]
+ANDROID_ABIS = [  'armeabi', #'armeabi-v7a',
+                  'armeabi-v7a with NEON', #'armeabi-v7a with VFPV3',
+                  'armeabi-v6 with VFP',
+                  'x86',
+                  'arm64-v8a', 'x86_64', 'mips64']
 ANDROID_TOOLCHAIN = 'cmake/android.toolchain.cmake'
+
 error = False
+packing = True
 
 
 def main(argv):
+    global packing
+
     parser = OptionParser()
     parser.add_option("-a", "--android", dest="android",
                       help="cross compile for all ABI for android API('android-NUMBER')", metavar="API")
+    parser.add_option("--androidABI", dest="androidAbi",
+                      help="set static abi for android compile", metavar="ABI")
+
     parser.add_option("-w", "--windows", dest="windows", action="store_true",
                       help="cross compile for windows (coming soon)")
     parser.add_option("-n", "--native", dest="native", action="store_true",
                       help="build for host system")
     parser.add_option("-c", "--clean", dest="clean", action="store_true",
                       help="cleans only cmake files first, not compiled files")
+
+    parser.add_option("--no-pack", dest="noPack", action="store_true",
+                      help="not create package android application, only compile")
     (options, args) = parser.parse_args()
 
     # go into build dir
@@ -35,9 +44,12 @@ def main(argv):
         os.makedirs('build/')
     os.chdir('build/')
 
+    if (options.noPack is not None):
+        packing = False
+
     # check
     if (options.android is not None):
-        crossAndroid(options.android)
+        crossAndroid(options.android, ('' if (options.androidAbi is None) else options.androidAbi))
 
     if (options.windows is not None):
         crossWindows()
@@ -57,15 +69,22 @@ def main(argv):
 
 
 # ANDROID
-def crossAndroid(api):
-    cleanCmake()
+def crossAndroid(api, abi):
+    global packing
+    #cleanCmake()
+
+    if (abi == ''):
+        abiList = ANDROID_ABIS
+    else:
+        abiList = [abi]
 
     printCol("\n=============================================================\n"
              "[ANDROID] API '%s'" % api, CYAN)
 
     okABIs = ''
 
-    for abi in ANDROID_ABIS:
+    for abi in abiList:
+        cleanCmake()
         print("[ANDROID] build abi '%s'" % abi)
         run(['cmake',
              '-DCMAKE_TOOLCHAIN_FILE=' + ANDROID_TOOLCHAIN,
@@ -78,8 +97,9 @@ def crossAndroid(api):
 
     okApk = False
     if (okABIs != ''):
-        printCol("\n[ANDROID] create apk", CYAN)
-        okApk = run(['make', 'BuildApk'])
+        if (packing):
+            printCol("\n[ANDROID] create apk", CYAN)
+            okApk = run(['make', 'BuildApk'])
     else:
         setError(True)
 
@@ -97,6 +117,7 @@ def crossWindows():
 
 # NATIVE
 def native():
+    global packing
     cleanCmake()
 
     printCol("\n=============================================================\n"
@@ -109,8 +130,9 @@ def native():
 
     okPack = False
     if okMake:
-        printCol("\n[NATIVE] create package", CYAN)
-        okPack = run(['make', 'package'])
+        if packing:
+            printCol("\n[NATIVE] create package", CYAN)
+            okPack = run(['make', 'package'])
     setError(okPack)
 
     print("\n[NATIVE] -- summary ----------------------------------")
