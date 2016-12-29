@@ -167,7 +167,7 @@ macro(android_create_apk name apk_package_name apk_directory libs_directory andr
     add_custom_command(
             TARGET ${ANDROID_BUILD_APK_TARGET}
             COMMAND ${CMAKE_COMMAND} -E copy
-            ${apk_directory}/bin/*.apk
+            ${apk_directory}/bin/*debug.apk
             ${OUTPUT_PACKAGE})
 
 
