@@ -15,6 +15,7 @@ ANDROID_ABIS = ['armeabi', 'armeabi-v7a'
                 # 'arm64-v8a', 'x86_64', 'mips64']
                 ]
 ANDROID_TOOLCHAIN = 'cmake/android.toolchain.cmake'
+error = False
 
 
 def main(argv):
@@ -47,78 +48,130 @@ def main(argv):
     if (options.clean is not None):
         cleanCmake()
 
+    printCol("\n=============================================================", CYAN)
+    if error:
+        printCol("[__ALL__] ERROR", RED)
+        exit(1)
+    else:
+        printCol("[__ALL__] SUCCESS", GREEN)
 
 
 # ANDROID
 def crossAndroid(api):
     cleanCmake()
-    print("[ANDROID] API '%s'" % api)
+
+    printCol("\n=============================================================\n"
+             "[ANDROID] API '%s'" % api, CYAN)
+
     okABIs = ''
 
     for abi in ANDROID_ABIS:
         print("[ANDROID] build abi '%s'" % abi)
-        call(['cmake',
-              '-DCMAKE_TOOLCHAIN_FILE=' + ANDROID_TOOLCHAIN,
-              '-DANDROID_NATIVE_API_LEVEL=' + api,
-              '-DANDROID_ABI=' + abi,
-              '..'])
+        run(['cmake',
+             '-DCMAKE_TOOLCHAIN_FILE=' + ANDROID_TOOLCHAIN,
+             '-DANDROID_NATIVE_API_LEVEL=' + api,
+             '-DANDROID_ABI=' + abi,
+             '..'])
         ok = not call(['make'])
         if ok:
             okABIs += abi + ", "
 
     okApk = False
     if (okABIs != ''):
-        print("[ANDROID] create apk")
-        okApk = not call(['make', 'BuildApk'])
+        printCol("\n[ANDROID] create apk", CYAN)
+        okApk = run(['make', 'BuildApk'])
+    else:
+        setError(True)
 
+    setError(okApk)
     print("\n[ANDROID] -- summary ----------------------------------")
-    print("[ANDROID] SUCCESSFULLY build for '%s' " % okABIs)
-    print("[ANDROID] build APK %s " % ('SUCCESSFULLY' if okApk else 'ERROR'))
+    printOk("[ANDROID] " + ("SUCCESSFULLY build for '" + okABIs + "'" if (okABIs != '') else 'ERROR'), okABIs != '')
+    printOk("[ANDROID] build APK %s " % ('SUCCESSFULLY' if okApk else 'ERROR'), okApk)
 
 
 # WINDOWS
 def crossWindows():
-    print("[WINDOWS] windows cross build is not supported (will come later)")
+    printCol("\n=============================================================\n"
+             "[WINDOWS] windows cross build is not supported (will come later)", CYAN)
 
 
 # NATIVE
 def native():
     cleanCmake()
-    print("[NATIVE] build")
 
-    call(['cmake',
-          '..'])
-    okMake = not call(['make'])
+    printCol("\n=============================================================\n"
+             "[NATIVE] build", CYAN)
+
+    run(['cmake',
+         '..'])
+    okMake = run(['make'])
+    setError(okMake)
 
     okPack = False
     if okMake:
-        print("[NATIVE] create package")
-        okPack = not call(['make', 'package'])
+        printCol("\n[NATIVE] create package", CYAN)
+        okPack = run(['make', 'package'])
+    setError(okPack)
 
     print("\n[NATIVE] -- summary ----------------------------------")
-    print("[NATIVE] build  '%s' " %         ('SUCCESSFULLY' if okMake else 'ERROR'))
-    print("[NATIVE] create package %s " %   ('SUCCESSFULLY' if okPack else 'ERROR'))
+    printOk("[NATIVE] build  '%s' " % ('SUCCESSFULLY' if okMake else 'ERROR'), okMake)
+    printOk("[NATIVE] create package %s " % ('SUCCESSFULLY' if okPack else 'ERROR'), okPack)
 
 
 def cleanCmake():
-    print("\n[CLEAN] clean all cmake files in '%s'" % os.getcwd())
+    printCol("\n=============================================================\n"
+             "[CLEAN] clean all cmake files in '" + os.getcwd() + "'", CYAN)
 
     for file in listFiles(['*.cmake', '*.txt', 'Makefile', 'CMakeFiles', '_CPack*', 'source']):
         if os.path.isfile(file):
             os.remove(file)
         elif os.path.isdir(file):
             shutil.rmtree(file)
-        #print("remove " + file)
-
+            # print("remove " + file)
 
 
 # ## helper
+def run(command):
+    s = ""
+    for a in command:
+        s += a + " "
+    printCol(s, BLUE)
+    return not call(command)
+
+
 def listFiles(listWildcard):
     files = []
     for w in listWildcard:
         files.extend(glob.glob(w))
     return files
 
+
+def setError(ok):
+    global error
+    error |= not ok
+
+
+# print color
+RED = "\033[1;31m"
+BLUE = "\033[1;34m"
+CYAN = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD = "\033[;1m"
+REVERSE = "\033[;7m"
+
+
+def printCol(text, color):
+    # sys.stdout.write(color)
+    print(color + text + RESET)
+    # sys.stdout.write(RESET)
+
+
+def printOk(text, ok):
+    if ok:
+        printCol(text, GREEN)
+    else:
+        printCol(text, RED)
 
 
 if __name__ == "__main__":
