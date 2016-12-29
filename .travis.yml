@@ -1,14 +1,20 @@
-language: cpp
-#sudo: required
+language: android
+sudo: required
 dist: trusty
 
-compiler:
-- gcc
 
-#before_install:
-#- sudo apt-get update -qq
+android:
+  components:
+    - tools
+    - platform-tools
+    - android-25
 
-#install:
+before_install:
+  - git clone https://github.com/urho3d/android-ndk.git $HOME/android-ndk-root
+  - export ANDROID_NDK=$HOME/android-ndk-root
+
+install:
+  - sudo apt-get install build-essential
 
 script: python build.py --android 25 --native
 
