@@ -9,6 +9,15 @@ android:
     - build-tools-23.0.2
     - android-25
 
+addons:
+  apt:
+    sources:
+      - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
+    packages:
+      - cmake
+      - cmake-data
+
+
 before_install:
   - git clone https://github.com/urho3d/android-ndk.git $HOME/android-ndk-root
   - export ANDROID_NDK=$HOME/android-ndk-root
