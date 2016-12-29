@@ -1,12 +1,12 @@
 language: android
 sudo: required
-dist: trusty
 
 
 android:
   components:
     - tools
     - platform-tools
+    - build-tools-23.0.2
     - android-25
 
 before_install:
