@@ -73,7 +73,6 @@ set(ANDROID_APK_RUN                 "1" CACHE BOOL "Run created apk file on the 
 set(ANDROID_APK_SIGNER_KEYSTORE	    "~/my-release-key.keystore" CACHE STRING "Keystore for signing the apk file")
 set(ANDROID_APK_SIGNER_ALIAS        "myalias" CACHE STRING "Alias for signing the apk file")
 
-set(ANDROID_NATIVE_API_LEVEL        "android-21")
 
 
 
@@ -89,7 +88,7 @@ if(UNIX)
     SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${META_PROJECT_AUTHOR})
 endif()
 
-SET(CPACK_OUTPUT_FILE_PREFIX            ${OUT_PACK})
+SET(CPACK_OUTPUT_FILE_PREFIX            ${OUTPUT_PACKAGE})
 set(CPACK_COMPONENTS_ALL                ${INSTALL_COMPONENTS})
 set(CPACK_PACKAGE_NAME                  ${META_PROJECT_NAME})
 set(CPACK_PACKAGE_VENDOR                "")

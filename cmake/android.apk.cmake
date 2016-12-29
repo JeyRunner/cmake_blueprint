@@ -65,9 +65,9 @@ macro(android_create_apk name apk_package_name apk_directory libs_directory andr
     set(ANDROID_NAME ${name})
     set(ANDROID_APK_PACKAGE ${apk_package_name})
 
-    set(ANDROID_BUILD_APK_TARGET    ${ANDROID_NAME}BuildApk)
-    set(ANDROID_INSTALL_TARGET      ${ANDROID_NAME}InstallApk)
-    set(ANDROID_RUN_TARGET          ${ANDROID_NAME}RunApk)
+    set(ANDROID_BUILD_APK_TARGET    BuildApk)
+    set(ANDROID_INSTALL_TARGET      InstallApk)
+    set(ANDROID_RUN_TARGET          RunApk)
 
     add_custom_target(${ANDROID_BUILD_APK_TARGET}
             DEPENDS ${ANDROID_NAME})
