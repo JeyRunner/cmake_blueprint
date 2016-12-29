@@ -1,10 +1,34 @@
 
 # Set output directories
-function(setOutDir BIN LIB ARCH)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${BIN}     PARENT_SCOPE)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${LIB}     PARENT_SCOPE)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${ARCH}    PARENT_SCOPE)
+function(setOutDir ALL BIN LIB ARCH PACK)
+    set(OUTPUT                          ${PROJECT_BINARY_DIR}/${ALL}     PARENT_SCOPE)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${PROJECT_BINARY_DIR}/${BIN}     PARENT_SCOPE)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  ${PROJECT_BINARY_DIR}/${LIB}     PARENT_SCOPE)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  ${PROJECT_BINARY_DIR}/${ARCH}    PARENT_SCOPE)
+
+    set(OUTPUT_BIN                      ${PROJECT_BINARY_DIR}/${BIN}     PARENT_SCOPE)
+    set(OUTPUT_LIB                      ${PROJECT_BINARY_DIR}/${LIB}     PARENT_SCOPE)
+    set(OUTPUT_ARCHIVE                  ${PROJECT_BINARY_DIR}/${ARCH}    PARENT_SCOPE)
+    set(OUTPUT_PACKAGE                  ${PROJECT_BINARY_DIR}/${PACK}    PARENT_SCOPE)
 endfunction(setOutDir)
+
+
+# Meta information about the project
+function(setMetaProject
+        NAME DISCRIPITOIN
+        VERSION_MAJOR VERSION_MINOR VERSION_PATCH
+        AUTHOR)
+    set(META_PROJECT_NAME        ${NAME}                                PARENT_SCOPE)
+    set(META_PROJECT_DESCRIPTION ${DISCRIPITOIN}                        PARENT_SCOPE)
+    set(META_PROJECT_AUTHOR      ${AUTHOR}                              PARENT_SCOPE)
+    set(META_VERSION_MAJOR       ${VERSION_MAJOR}                       PARENT_SCOPE)
+    set(META_VERSION_MINOR       ${VERSION_MINOR}                       PARENT_SCOPE)
+    set(META_VERSION_PATCH       ${VERSION_PATCH}                       PARENT_SCOPE)
+    set(VERSION                  "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+    set(META_VERSION             ${VERSION}                             PARENT_SCOPE)
+    set(META_NAME_VERSION        "${NAME}-${VERSION}"                   PARENT_SCOPE)
+endfunction()
+
 
 
 # cpack

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 # Include cmake modules
 include(cmake/buildHelper.cmake)
+include(cmake/android.apk.cmake)
 
 
 
@@ -9,20 +10,17 @@ include(cmake/buildHelper.cmake)
 # -- Project infos
 
 # Meta information about the project
-set(META_PROJECT_NAME        "bluePrintCmake")
-set(META_PROJECT_DESCRIPTION "blue print cmake for c++")
-set(META_PROJECT_AUTHOR      "Joshua Johannson")
-set(META_VERSION_MAJOR       "1")
-set(META_VERSION_MINOR       "1")
-set(META_VERSION_PATCH       "1")
-set(META_VERSION             "${META_VERSION_MAJOR}.${META_VERSION_MINOR}.${META_VERSION_PATCH}")
-set(META_NAME_VERSION        "${META_PROJECT_NAME}-${META_VERSION}")
+setMetaProject(
+        "bluePrintCmake"  "blue print cmake for c++"    # name, descrition
+         1 1 1                                          # version
+        "Joshua Johannson"                              # author
+)
 
-# install
-set(INSTALL_BIN         bin)
-set(INSTALL_LIB         lib)
-set(INSTALL_INCLUDE     include)
-set(INSTALL_COMPONENTS  applications libraries headers)
+# set project name and output dir
+project(${META_PROJECT_NAME})
+
+
+
 
 # ------------------------------------
 # -- Project options
@@ -35,23 +33,53 @@ option(OPTION_BUILD_EXAMPLES            "Build examples."                       
 
 
 
-# set project name and output dir
-project(${META_PROJECT_NAME})
 
-# set out dirs
+# -----------------------------
+# -- set BUILD out dirs
 setOutDir(
-        build   # bin
-        build   # lib
-        build)  # archiv
-set(OUT_INSTALLER build)
+        build       # general
+        build/bin   # bin
+        build/lib   # lib
+        build/arch  # archiv
+        build/pack  # package / installer / app
+)
 
-# default dirs for targets
+# -----------------------------
+# -- set INSTALL out dirs
+set(INSTALL_BIN         bin)
+set(INSTALL_LIB         lib)
+set(INSTALL_INCLUDE     include)
+set(INSTALL_COMPONENTS  applications libraries headers)
+
+
+# -----------------------------
+# -- default SOURCE dirs for targets
 set(SOURCE_DIR  source/)
 set(INCLUDE_DIR include/)
 
 
+
+# ----------------------------------
+# -- cross compile
+
+# -- ANDROID -------------------------------------------------
+# platform dependet wrappers
+set(WRAPPER_ANDROID         platform/android)
+set(WRAPPER_ANDROID_DIR     ${CMAKE_SOURCE_DIR}/${WRAPPER_ANDROID})
+
+set(ANDROID_APK_API_LEVEL           "25" CACHE STRING "Android APK API level")
+set(ANDROID_APK_INSTALL             "1" CACHE BOOL "Install created apk file on the device automatically?")
+set(ANDROID_APK_RUN                 "1" CACHE BOOL "Run created apk file on the device automatically?")
+set(ANDROID_APK_SIGNER_KEYSTORE	    "~/my-release-key.keystore" CACHE STRING "Keystore for signing the apk file")
+set(ANDROID_APK_SIGNER_ALIAS        "myalias" CACHE STRING "Alias for signing the apk file")
+
+set(ANDROID_NATIVE_API_LEVEL        "android-21")
+
+
+
 # source dir
 add_subdirectory(source)
+
 
 
 # ----------------------------------
@@ -61,7 +89,7 @@ if(UNIX)
     SET(CPACK_DEBIAN_PACKAGE_MAINTAINER ${META_PROJECT_AUTHOR})
 endif()
 
-SET(CPACK_OUTPUT_FILE_PREFIX            ${OUT_INSTALLER})
+SET(CPACK_OUTPUT_FILE_PREFIX            ${OUT_PACK})
 set(CPACK_COMPONENTS_ALL                ${INSTALL_COMPONENTS})
 set(CPACK_PACKAGE_NAME                  ${META_PROJECT_NAME})
 set(CPACK_PACKAGE_VENDOR                "")

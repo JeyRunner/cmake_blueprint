@@ -1,5 +1,5 @@
 # Target
-set(TARGET ${META_NAME_VERSION}-Linux)
+set(TARGET ${PROJECT_NAME})
 set(SRC)
 
 
@@ -9,13 +9,22 @@ file(GLOB SRC_FILES
         ${INCLUDE_DIR}*.h)
 
 
-
 #
 # extrutable / Lib
 #
-add_executable(
-        ${TARGET}
-        ${SRC_FILES})
+if (ANDROID)
+    add_library(
+            ${TARGET}
+            SHARED
+            ${SRC_FILES})
+    set_target_properties(
+            ${TARGET} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_LIB}/${ANDROID_NDK_ABI_NAME})
+else ()
+    add_executable(
+            ${TARGET}
+            ${SRC_FILES})
+endif ()
 
 
 #
@@ -53,7 +62,6 @@ target_link_libraries(${TARGET}
         )
 
 
-
 # ########################################
 #
 # Deployment
@@ -61,9 +69,9 @@ target_link_libraries(${TARGET}
 
 # Self
 install(TARGETS ${TARGET}
-        RUNTIME DESTINATION ${INSTALL_BIN}    COMPONENT runtime
-        LIBRARY DESTINATION ${INSTALL_SHARED} COMPONENT runtime
-        ARCHIVE DESTINATION ${INSTALL_LIB}    COMPONENT develope
+        RUNTIME DESTINATION ${INSTALL_BIN} COMPONENT runtime
+        LIBRARY DESTINATION ${INSTALL_LIB} COMPONENT runtime
+        ARCHIVE DESTINATION ${INSTALL_ARCH} COMPONENT develope
         )
 
 # Header files
@@ -71,3 +79,16 @@ install(DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION ${INSTALL_INCLUDE}
         COMPONENT develope
         )
+
+
+# android build apk
+if (ANDROID)
+    android_create_apk(
+            ${TARGET}                       # name
+            "com.blueprint.cmake"           # package name
+            ${OUTPUT}/${WRAPPER_ANDROID}    # build dir for all android files
+            ${OUTPUT_LIB}                   # libs to use from java
+            ${WRAPPER_ANDROID_DIR}          # dir of AndroidManifest..
+            ""                              # asserts dir
+    )
+endif ()
