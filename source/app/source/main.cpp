@@ -5,7 +5,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
+#ifdef ANDROID
 #include <jni.h>
+#endif
 using namespace std;
 
 #define as(x) #x
@@ -27,7 +29,7 @@ std::string to_string(T value)
   return os.str();
 }
 
-
+#ifdef ANDROID
 extern "C"
 jstring
 Java_com_blueprint_cmake_main_stringFromJNI(
@@ -42,3 +44,4 @@ Java_com_blueprint_cmake_main_stringFromJNI(
 
   return env->NewStringUTF(hello.c_str());
 }
+#endif
