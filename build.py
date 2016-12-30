@@ -47,7 +47,8 @@ def main(argv):
     (options, args) = parser.parse_args()
 
     # remove old
-    shutil.rmtree('build/')
+    if os.path.exists('build/'):
+        shutil.rmtree('build/')
 
     # go into build dir
     if not os.path.exists('build/'):
