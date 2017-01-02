@@ -24,13 +24,17 @@ project(${META_PROJECT_NAME})
 
 # ------------------------------------
 # -- Project options
-option(OPTION_CROSS_COMPILE_ANDROID     "Cross compile for android (need sdk and ndk)."                         ON)
-option(OPTION_CROSS_COMPILE_WINDOWS     "Cross compile for windows (need sdk)."                                 OFF)
-option(OPTION_CROSS_COMPILE_RASPBERRY   "Cross compile for rasperry pi (need compiler and raspi root folder)."  OFF)
-option(OPTION_CROSS_COMPILE_OSX         "Cross compile for osx (need sdk)."                                     OFF)
+#option(OPTION_CROSS_COMPILE_ANDROID     "Cross compile for android (need sdk and ndk)."                         ON)
+#option(OPTION_CROSS_COMPILE_WINDOWS     "Cross compile for windows (need sdk)."                                 OFF)
+#option(OPTION_CROSS_COMPILE_RASPBERRY   "Cross compile for rasperry pi (need compiler and raspi root folder)."  OFF)
+#option(OPTION_CROSS_COMPILE_OSX         "Cross compile for osx (need sdk)."                                     OFF)
 option(OPTION_BUILD_TESTS               "Build tests."                                                          OFF)
 option(OPTION_BUILD_EXAMPLES            "Build examples."                                                       OFF)
 
+add_definitions(-DGL_GLEXT_PROTOTYPES)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_C_STANDARD_LIBRARIES "-landroid -llog -lGLESv1_CM -lGLESv2")
+set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}")
 
 
 
@@ -57,6 +61,13 @@ set(INSTALL_COMPONENTS  applications libraries headers)
 set(SOURCE_DIR  source/)
 set(INCLUDE_DIR include/)
 
+# default headers, libs
+set(DEFAULT_INCLUDE_DIRECTORIES
+        ${DEPENDENCIES_SDL2_INCLUDE})
+
+set(DEFAULT_LIBRARIES
+        ${DEPENDENCIES_SDL2_LIB})
+
 
 
 # ----------------------------------
@@ -73,6 +84,12 @@ set(ANDROID_APK_RUN                 "1" CACHE BOOL "Run created apk file on the 
 set(ANDROID_APK_SIGNER_KEYSTORE	    "~/my-release-key.keystore" CACHE STRING "Keystore for signing the apk file")
 set(ANDROID_APK_SIGNER_ALIAS        "myalias" CACHE STRING "Alias for signing the apk file")
 
+
+
+
+# ------------------------------------
+# -- Dependences
+add_subdirectory(dependencies)
 
 
 

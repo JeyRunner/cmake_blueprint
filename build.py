@@ -103,6 +103,7 @@ def crossAndroid(api, abi):
              '-DCMAKE_TOOLCHAIN_FILE=' + ANDROID_TOOLCHAIN,
              '-DANDROID_NATIVE_API_LEVEL=' + api,
              '-DANDROID_ABI=' + abi,
+             '-DCMAKE_BUILD_TYPE=Debug',
              '..'])
         ok = not call(['make'])
         if ok:

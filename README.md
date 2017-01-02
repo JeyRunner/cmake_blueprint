@@ -16,9 +16,15 @@ Here you can download the [latest Release](https://www.github.com/JeyRunner/cmak
 ├── cmake
 │   ├── helper.cmake
 |   └── ..
+|
+├── dependencies
+|   ├── SDL2
+|   └── ..
+|
 ├── platform
 |   ├── android
 |   └── ..
+|
 ├── source
 |   ├── component1
 |   │   ├── include
@@ -38,6 +44,7 @@ Here you can download the [latest Release](https://www.github.com/JeyRunner/cmak
 * ```cmake``` all cmake helper functions, toolchain files
 * ```platform``` platform dependent code (expl.: android java wrapper, manifest.xml)
 * ```source``` source components (libraries, binaries)
+* ```dependentcies``` source, headers of thirdparty dependencies  
 * ```build.py``` used for automatic cmake cross build
 
 
