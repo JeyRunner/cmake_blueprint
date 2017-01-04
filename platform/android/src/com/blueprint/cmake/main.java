@@ -4,10 +4,30 @@ import android.app.Activity;
 import android.util.Log;
 import android.os.Bundle;
 import android.widget.TextView;
+import org.libsdl.app.SDLActivity;
 
-public class main extends Activity
+public class main extends SDLActivity
 {
+    static
+    {
+       // System.loadLibrary("bluePrintCmake");
+    }
+
+
+    @Override
+    protected String[] getLibraries() {
+        return new String[] {
+            "SDL2-2.0",
+            // "SDL2_image",
+            // "SDL2_mixer",
+            // "SDL2_net",
+            // "SDL2_ttf",
+            "bluePrintCmake"
+        };
+    }
+    
     /** Called when the activity is first created. */
+    /*
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -33,4 +53,5 @@ public class main extends Activity
     }
 
      public native String stringFromJNI(int howMuch);
+     */
 }

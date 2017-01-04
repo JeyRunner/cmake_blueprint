@@ -15,7 +15,7 @@ using namespace std;
 
 int main(int argCount, char *args[])
 {
-  printf("program arguments (%i) of %s \n",
+  SDL_Log("program arguments (%i) of %s \n",
          argCount, args[0]);
 
 
@@ -23,15 +23,13 @@ int main(int argCount, char *args[])
   SDL_Surface *surface = NULL;
 
   // init sdl -----------------------------
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
-    fprintf(stderr,
-            "\nUnable to initialize SDL:  %s\n",
-            SDL_GetError()
-    );
+  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    string e = "\nUnable to initialize SDL:  " + string(SDL_GetError());
+    SDL_Log(e.c_str());
     return 1;
   }
-  atexit(SDL_Quit);
 
+  SDL_Log("init SDL ok!");
 
   // activate doublebuffering
 
@@ -42,13 +40,22 @@ int main(int argCount, char *args[])
 
 
   // open window - init projection matrix ...
-  /*SDL_Window* window = SDL_CreateWindow("test",
+  SDL_Window* window = SDL_CreateWindow("test",
                             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                             100, 100,
-                            SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);*/
+                            SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
+  if (window == NULL)
+  {
+    string e = "\nerror create window:  " + string(SDL_GetError());
+    SDL_Log(e.c_str());
+  } else
+  {
+    string e = "\ncreate window ok!  " + string(SDL_GetError());
+    SDL_Log(e.c_str());
+  }
   // create context
-  //SDL_GL_CreateContext(window);
+  SDL_GL_CreateContext(window);
 
 
 
@@ -56,6 +63,7 @@ int main(int argCount, char *args[])
   //cout << ("Open Gl version: '" + to_string(glGetString(GL_VERSION)) + "'");
 
 
+  while (true);
   exit(42);
 }
 

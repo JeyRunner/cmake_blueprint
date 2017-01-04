@@ -10,19 +10,24 @@ from subprocess import call
 # VAR
 ANDROID_ABIS = [  'armeabi', #'armeabi-v7a',
                   'armeabi-v7a with NEON', #'armeabi-v7a with VFPV3',
-                  'armeabi-v6 with VFP',
+                  #'armeabi-v6 with VFP',
                   'x86',
-                  'arm64-v8a', 'x86_64', 'mips64']
+                  #'arm64-v8a',
+                  'x86_64',
+                  #'mips64'
+                  ]
 ANDROID_TOOLCHAIN = 'cmake/android.toolchain.cmake'
 
 error = False
 packing = True
 androidRun = False
 androidInstall = False
-
+clean = True
+rootBuild = ""
+rootSrc = ""
 
 def main(argv):
-    global packing, androidInstall, androidRun
+    global packing, androidInstall, androidRun, clean, rootBuild, rootSrc, ANDROID_TOOLCHAIN
 
     parser = OptionParser()
     parser.add_option("-a", "--android", dest="android",
@@ -46,19 +51,29 @@ def main(argv):
                       help="not create package android application, only compile")
     (options, args) = parser.parse_args()
 
-    # remove old
-    if os.path.exists('build/'):
-        shutil.rmtree('build/')
+
+    packing = options.noPack is None
+    clean = options.clean is not None
+    androidInstall = options.androidInstall is not None
+    androidRun = options.androidRun is not None
+
+    rootSrc = os.getcwd()
+
+    if clean:
+        # remove old
+        if os.path.exists('build/'):
+            shutil.rmtree('build/')
 
     # go into build dir
     if not os.path.exists('build/'):
         os.makedirs('build/')
     os.chdir('build/')
 
+    #get root dir
+    rootBuild = os.getcwd()
+    ANDROID_TOOLCHAIN = rootSrc + "/" + ANDROID_TOOLCHAIN
 
-    packing = options.noPack is None
-    androidInstall = options.androidInstall is not None
-    androidRun = options.androidRun is not None
+
 
     # check
     if (options.android is not None):
@@ -70,8 +85,8 @@ def main(argv):
     if (options.native is not None):
         native()
 
-    if (options.clean is not None):
-        cleanCmake()
+    #if (options.clean is not None):
+        #cleanCmake()
 
     printCol("\n=============================================================", CYAN)
     if error:
@@ -83,8 +98,7 @@ def main(argv):
 
 # ANDROID
 def crossAndroid(api, abi):
-    global packing, androidInstall, androidRun
-    #cleanCmake()
+    global packing, androidInstall, androidRun, clean
 
     if (abi == ''):
         abiList = ANDROID_ABIS
@@ -97,14 +111,14 @@ def crossAndroid(api, abi):
     okABIs = ''
 
     for abi in abiList:
-        cleanCmake()
+        chdir('cmake-android/' + abi)
         print("[ANDROID] build abi '%s'" % abi)
         run(['cmake',
              '-DCMAKE_TOOLCHAIN_FILE=' + ANDROID_TOOLCHAIN,
              '-DANDROID_NATIVE_API_LEVEL=' + api,
              '-DANDROID_ABI=' + abi,
              '-DCMAKE_BUILD_TYPE=Debug',
-             '..'])
+             '' + rootSrc])
         ok = not call(['make'])
         if ok:
             okABIs += abi + ", "
@@ -134,12 +148,14 @@ def crossAndroid(api, abi):
 
 # WINDOWS
 def crossWindows():
+    chdir('cmake-windows')
     printCol("\n=============================================================\n"
              "[WINDOWS] windows cross build is not supported (will come later)", CYAN)
 
 
 # NATIVE
 def native():
+    chdir('cmake-native')
     global packing
     cleanCmake()
 
@@ -147,7 +163,7 @@ def native():
              "[NATIVE] build", CYAN)
 
     run(['cmake',
-         '..'])
+         '' + rootSrc])
     okMake = run(['make'])
     setError(okMake)
 
@@ -156,7 +172,7 @@ def native():
         if packing:
             printCol("\n[NATIVE] create package", CYAN)
             okPack = run(['make', 'package'])
-    setError(okPack)
+    #setError(okPack)
 
     print("\n[NATIVE] -- summary ----------------------------------")
     printOk("[NATIVE] build  '%s' " % ('SUCCESSFULLY' if okMake else 'ERROR'), okMake)
@@ -164,15 +180,18 @@ def native():
 
 
 def cleanCmake():
-    printCol("\n=============================================================\n"
-             "[CLEAN] clean all cmake files in '" + os.getcwd() + "'", CYAN)
+    if clean:
+        printCol("\n=============================================================\n"
+                 "[CLEAN] clean all cmake files in '" + os.getcwd() + "'", CYAN)
 
-    for file in listFiles(['*.cmake', '*.txt', 'Makefile', 'CMakeFiles', '_CPack*', 'source']):
-        if os.path.isfile(file):
-            os.remove(file)
-        elif os.path.isdir(file):
-            shutil.rmtree(file)
-            # print("remove " + file)
+        for file in listFiles(['*.cmake', '*.txt', 'Makefile', 'CMakeFiles', '_CPack*', 'source']):
+            if os.path.isfile(file):
+                os.remove(file)
+            elif os.path.isdir(file):
+                shutil.rmtree(file)
+                # print("remove " + file)
+    else:
+        print "NOT Clean"
 
 
 # ## helper
@@ -190,6 +209,12 @@ def listFiles(listWildcard):
         files.extend(glob.glob(w))
     return files
 
+def chdir(relativePath):
+    global rootBuild
+    if not os.path.exists(rootBuild + "/" + relativePath):
+        os.makedirs(rootBuild +"/" + relativePath)
+    os.chdir(rootBuild +"/" + relativePath)
+    print "CHDIR ------------- " + rootBuild + "/" + relativePath
 
 def setError(ok):
     global error
