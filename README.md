@@ -75,4 +75,4 @@ The ```make BuildApk``` command creates a ready android application file.
 **Alternatively** you can use build.py to cross compile.
 ```
 ./build.py --android <android_api>
-```
+``` 
