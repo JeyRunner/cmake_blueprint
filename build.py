@@ -119,7 +119,7 @@ def crossAndroid(api, abi):
              '-DANDROID_ABI=' + abi,
              '-DCMAKE_BUILD_TYPE=Debug',
              '' + rootSrc])
-        ok = not call(['make'])
+        ok = not call(['make'])#, '-j', '8'])
         if ok:
             okABIs += abi + ", "
 

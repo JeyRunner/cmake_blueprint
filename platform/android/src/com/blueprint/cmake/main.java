@@ -17,7 +17,7 @@ public class main extends SDLActivity
     @Override
     protected String[] getLibraries() {
         return new String[] {
-            "SDL2-2.0",
+            //"SDL2-2.0",
             // "SDL2_image",
             // "SDL2_mixer",
             // "SDL2_net",

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 # Include cmake modules
 include(cmake/buildHelper.cmake)
 include(cmake/android.apk.cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "cmake")
 
 
 # ------------------------------------
@@ -80,13 +81,15 @@ set(ANDROID_APK_SIGNER_ALIAS "myalias" CACHE STRING "Alias for signing the apk f
 
 if (ANDROID)
     add_definitions(-DGL_GLEXT_PROTOTYPES)
+    add_definitions( -DGLES2=1 )
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    set(CMAKE_C_STANDARD_LIBRARIES "-landroid -llog -lGLESv1_CM -lGLESv2")
+    set(CMAKE_C_STANDARD_LIBRARIES "-landroid -llog -lGLESv1_CM -lc -lstdc++ -lGLESv2") #-lgnustl_shared
     set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}")
 endif ()
 
 
-link_directories(${OUTPUT_LIB})
+link_directories(${OUTPUT_LIB}
+        ${DEPENDENCIES_OpenGL_DIR})
 
 # ------------------------------------
 # -- Dependences
@@ -95,10 +98,16 @@ add_subdirectory(dependencies)
 
 # default headers, libs
 set(DEFAULT_INCLUDE_DIRECTORIES
-        ${DEPENDENCIES_SDL2_INCLUDE})
+        ${DEPENDENCIES_SDL2_INCLUDE}
+        ${DEPENDENCIES_GLEW_INCLUDE}
+        ${DEPENDENCIES_OpenGL_INCLUDE}
+        ${DEPENDENCIES_GLM_INCLUDE})
 
 set(DEFAULT_LIBRARIES
-        ${DEPENDENCIES_SDL2_LIB})
+        ${DEPENDENCIES_SDL2_LIB}
+        ${DEPENDENCIES_GLEW_LIB}
+        ${DEPENDENCIES_OpenGL_LIB}
+        )
 
 
 # source dir

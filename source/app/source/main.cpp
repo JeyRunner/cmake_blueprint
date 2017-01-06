@@ -1,73 +1,55 @@
-//
-// Created by joshua on 27.12.16.
-//
-#include <stdio.h>
+/* -- INCLUDE ------------------------------------------------ */
+#include <stdlib.h>
 #include <iostream>
-#include <cstdlib>
 #include <sstream>
-#include <SDL.h>
-#ifdef ANDROID
-#include <jni.h>
-#endif
+//#include <>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp> // gl Math matix transform
 using namespace std;
 
-#define as(x) #x
+/* -- includes depinding on platform */
+#ifdef ANDROID
+#include <jni.h>
+#include <GLES2/gl2.h>
 
-int main(int argCount, char *args[])
-{
-  SDL_Log("program arguments (%i) of %s \n",
-         argCount, args[0]);
-
-
-  int error = 0;
-  SDL_Surface *surface = NULL;
-
-  // init sdl -----------------------------
-  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-    string e = "\nUnable to initialize SDL:  " + string(SDL_GetError());
-    SDL_Log(e.c_str());
-    return 1;
-  }
-
-  SDL_Log("init SDL ok!");
-
-  // activate doublebuffering
-
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8); // 8bit per pixel stacil buffer
+#elif  __gnu_linux__
+#include <GL/glew.h>
+#include <GL/glu.h>
+//#include <SDL/SDL_opengl.h>
 
 
-  // open window - init projection matrix ...
-  SDL_Window* window = SDL_CreateWindow("test",
-                            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                            100, 100,
-                            SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+#elif defined   __APPLE__     
+#elif defined   __WINDOWS__
+#else
+#endif
 
-  if (window == NULL)
-  {
-    string e = "\nerror create window:  " + string(SDL_GetError());
-    SDL_Log(e.c_str());
-  } else
-  {
-    string e = "\ncreate window ok!  " + string(SDL_GetError());
-    SDL_Log(e.c_str());
-  }
-  // create context
-  SDL_GL_CreateContext(window);
+#include <SDL.h>
+#include <ctime>
+#include <unistd.h>
 
 
+// -- VAR
+SDL_Window *window;
+SDL_GLContext context;
 
-  // print open gl info
-  //cout << ("Open Gl version: '" + to_string(glGetString(GL_VERSION)) + "'");
+GLint HANDEL_SHADER,
+    HANDEL_SHADER_ATTR_VERTEX,
+    HANDEL_SHADER_UNI_TRANSFORM,
+    HANDEL_SHADER_UNI_COLOR;
+
+int windowWidth = 1500;
+int windowHeight = 400;
+GLfloat fps = 0;
 
 
-  while (true);
-  exit(42);
-}
+/* -- PRE DEFINED FUNC ---------------------------------------- */
+void renderLoop();
+void renderScene();
+void createShader();
+void checkShaderError(GLuint shader, bool isProgram, GLint flag, string message);
 
 
+/* -- HELPER ---------------------------------------------------*/
 template<typename T>
 std::string to_string(T value)
 {
@@ -76,19 +58,528 @@ std::string to_string(T value)
   return os.str();
 }
 
-#ifdef ANDROID
-extern "C"
-jstring
-Java_com_blueprint_cmake_main_stringFromJNI(
-    JNIEnv* env,
-    jobject /* this */, int howmuch) {
 
-  string a = "";
-  for (int i = 0; i < howmuch; ++i) {
-    a+= to_string(i) + "_";
-  }
-  std::string hello = a;
-
-  return env->NewStringUTF(hello.c_str());
+void log(string text)
+{
+  SDL_LogMessage(0, SDL_LOG_PRIORITY_INFO, text.c_str());
 }
+
+
+
+
+
+/* -- CREATE OPENGL WINDOW ------------------------------------ */
+// -- Linux - Ubuntu 
+bool createWindow()
+{
+  int error = 0;
+  log("[....] creating Window");
+
+  // init sdl -----------------------------
+  error = SDL_Init(SDL_INIT_VIDEO);
+  if (error != 0)
+  {
+    log("[ERR ] SDL_Init");
+    return false;
+  }
+  else
+  {
+    log("[ OK ] SDL_Init");
+  }
+
+  // set window title
+  //SDL_WM_SetCaption("OpenGl Window", "");
+
+  // activate doublebuffering
+  // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+
+
+  // open window
+  //SDL_SetVideoMode(windowWith, windowHight, 32, SDL_OPENGL | SDL_RESIZABLE | SDL_DOUBLEBUF);
+  window = SDL_CreateWindow("OpenGl Window with SDL2",
+                            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                            windowWidth, windowHeight,
+                            SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+
+
+  SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+  log("[DISP] get SDL window size, height: " + to_string(windowHeight) + ", windowWidth: " + to_string(windowWidth));
+
+
+  // create context
+  context = SDL_GL_CreateContext(window);
+
+
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8); // 8bit per pixel stacil buffer
+
+  // init glew
+  // not in android
+#ifndef ANDROID
+  glewInit();
 #endif
+
+  // ouput ok
+  log("[DONE] created Window ");
+}
+
+
+/* -- MAIN PROGRAM ------------------------------------------- */
+int main(int argc, char *argv[])
+{
+  // output
+  log("[ OK ] program start");
+  createWindow();
+
+
+  // output of openGl versions
+  log("[INFO] openGl version: " + to_string(glGetString(GL_VERSION)));
+  log("[INFO] openGl SL version: " + to_string(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+
+  // start render loop
+  renderLoop();
+}
+
+
+double starttime = 0;
+double endtime = 0;
+float timeGone = 0;
+int frame = 0;
+// transform matrix
+glm::mat4 transformMatrix;
+
+/* -- RENDER LOOP ---------------------------------------------- */
+void renderLoop()
+{
+  // resize ortho
+  transformMatrix = glm::ortho(-(float) windowWidth / 2  /* left */,
+                               (float) windowWidth / 2  /* right */,
+                               -(float) windowHeight / 2 /* bottom */,
+                               (float) windowHeight / 2 /* top */,
+
+                               1.0f                     /* zNear */,
+                               -1.0f                     /* zFar */);
+  glViewport(0, 0, windowWidth, windowHeight);
+
+
+  // sdl event
+  SDL_Event event;
+
+  // output
+  log("[....] start render loop");
+
+  // create shader
+  createShader();
+
+
+  //while (true);
+  //sleep(6);
+
+  SDL_StartTextInput();
+  SDL_Rect rect;
+  rect.x = 10;
+  rect.y = 10;
+  rect.h = 50;
+  rect.w = 100;
+  SDL_SetTextInputRect(&rect);
+
+
+  bool loop = true;
+  bool render = true;
+
+  // render loop
+  while (loop)
+  {
+    // get next SDL event
+    while (SDL_PollEvent(&event))
+    {
+      //log("event: " + event.type);
+      // check for SDL event
+      switch (event.type)
+      {
+        case SDL_QUIT:
+          log("[END ] close program ");
+          SDL_DestroyWindow(window);
+          SDL_Quit();// close SDL
+          exit(0);    // close program
+          break;
+
+          // event from window
+        case SDL_WINDOWEVENT:
+          switch (event.window.event)
+          {
+            case SDL_WINDOWEVENT_RESIZED:
+              int w = event.window.data1;
+              int h = event.window.data2;
+              //SDL_GetWindowSize(window, &w, &h);
+              // out
+              //cout << "[INFO] window height: " << h << "  width: " << w << endl;
+              //cout << "[INEV] window height: " <<  << "  width: " << w << endl;
+              // reset screen
+              //SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE | SDL_DOUBLEBUF);
+              //SDL_SetWindowSize(window, w, h);
+              glViewport(0, 0, w, h);
+
+              // resize ortho
+              transformMatrix = glm::ortho(-(float) w / 2  /* left */,
+                                           (float) w / 2  /* right */,
+                                           -(float) h / 2 /* bottom */,
+                                           (float) h / 2 /* top */,
+
+                                           1.0f                     /* zNear */,
+                                           -1.0f                     /* zFar */);
+              break;
+          }
+          break;
+
+        case SDL_APP_WILLENTERBACKGROUND:
+          render = false;
+          log("SDL_APP_WILLENTERBACKGROUND");
+          break;
+
+
+        case SDL_APP_WILLENTERFOREGROUND:
+          render = true;
+          log("SDL_APP_WILLENTERFOREGROUND");
+          break;
+
+
+        case SDL_APP_TERMINATING:
+          loop = false;
+          log("SDL_APP_TERMINATING");
+          break;
+
+        case SDL_APP_LOWMEMORY:
+          log("SDL_APP_LOWMEMORY");
+          break;
+      }
+
+    }
+
+
+    if (render)
+    {
+      // render
+      log("render");
+      renderScene();
+      sleep(1);
+    }
+  }
+}
+
+/* -- RENDER ------------------------------------ */
+void renderScene()
+{
+
+  // vertices
+  GLfloat vertices[12] = {
+      -100, -100, 0,
+      -100, 100, 0,
+      100, -100, 0,
+      100, 100, 0
+  };
+
+
+  /* clear framebuffer
+   * -> red               */
+  glClearColor(1.0, 1.0, 1.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+
+
+  // draw some stuff -------------------------------------------------
+  // aktivate shader program
+  glUseProgram(HANDEL_SHADER);
+
+  // set attribute to recive vertex data
+  glEnableVertexAttribArray(HANDEL_SHADER_ATTR_VERTEX);
+
+
+  for (float i = -1; i <= 1.0; i += 0.25)
+  {
+    // remove
+    float value = (0.3 * glm::sin(timeGone * 0.3) + i);
+    float value2 = (0.3 * glm::cos((timeGone * 0.3) + i));
+    float value3 = (0.9 * glm::cos((timeGone * 0.6) + i));
+
+    glm::vec3 move = glm::vec3(value, value2, 0);
+    glm::vec3 rot = glm::vec3(0, 0, 1);
+
+
+    glm::mat4 moveMatrix = glm::translate(glm::mat4(1.0f), move);
+    glm::mat4 rotMatrix = glm::rotate(glm::mat4(1.0f), value * 100, rot);
+    glm::mat4 matrixFinal = moveMatrix * transformMatrix * rotMatrix;
+
+
+
+    // set transform/projecttion matrix
+    glUniformMatrix4fv(HANDEL_SHADER_UNI_TRANSFORM,
+                       1                /* amount of matrix */,
+                       GL_FALSE         /* convert format -> NO */,
+                       &matrixFinal[0][0]);
+
+    // set color
+    glUniform4f(HANDEL_SHADER_UNI_COLOR,
+                value3,
+                value,
+                value2,
+                1.0);
+
+    // give gl the Vertices via array
+    glVertexAttribPointer(
+        HANDEL_SHADER_ATTR_VERTEX                       /* pass vertices to vertex Pos attribute of vertexShader */,
+        3                                               /* 3 Aruments: x,y,z */,
+        GL_FLOAT                                        /* Format: float     */,
+        GL_FALSE                                        /* take values as-is */,
+        0                                               /* Entry lenght ?    */,
+        vertices                       /* vertices Array    */ );
+
+    // draw with the vertices form the given Array
+    // make two connected triangle to create a rectangle
+    glDrawArrays(
+        GL_TRIANGLE_STRIP,
+        0 /* Array start pos   */,
+        4 /* how much vertices */);
+
+  }
+
+
+
+  // -- FPS -----------------------------------------------
+  // vertices
+  GLfloat verticesFps[12] = {
+      -0, -10, 0,
+      -0, 0, 0,
+      (fps / 4), -10, 0,
+      (fps / 4), 0, 0
+  };
+
+  // remove
+  glm::vec3 move = glm::vec3(-1, +1, 0);
+  glm::vec3 rot = glm::vec3(0, 0, 0);
+
+
+  glm::mat4 moveMatrix = glm::translate(glm::mat4(1.0f), move);
+  glm::mat4 matrixFinal = moveMatrix * transformMatrix;
+
+
+  // set transform/projecttion matrix
+  glUniformMatrix4fv(HANDEL_SHADER_UNI_TRANSFORM,
+                     1                /* amount of matrix */,
+                     GL_FALSE         /* convert format -> NO */,
+                     &matrixFinal[0][0]);
+
+  // set color
+  glUniform4f(HANDEL_SHADER_UNI_COLOR,
+              0.0,
+              1.0,
+              0.2,
+              1.0);
+
+  // give gl the Vertices via array
+  glVertexAttribPointer(
+      HANDEL_SHADER_ATTR_VERTEX                       /* pass vertices to vertex Pos attribute of vertexShader */,
+      3                                               /* 3 Aruments: x,y,z */,
+      GL_FLOAT                                        /* Format: float     */,
+      GL_FALSE                                        /* take values as-is */,
+      0                                               /* Entry lenght ?    */,
+      verticesFps                       /* vertices Array    */ );
+
+  // draw with the vertices form the given Array
+  // make two connected triangle to create a rectangle
+  glDrawArrays(
+      GL_TRIANGLE_STRIP,
+      0 /* Array start pos   */,
+      4 /* how much vertices */);
+  // -- End FPS -------------------------------------------
+
+
+
+
+
+
+  // deactivate vertex Array mode
+  // => end of operation
+  glDisableVertexAttribArray(HANDEL_SHADER_ATTR_VERTEX);
+
+  // unbind shader
+  glUseProgram(0);
+
+  // end draw --------------------------------------------------
+
+
+  // swarp buffer
+  //SDL_GL_SwapBuffers();
+  SDL_GL_SwapWindow(window);
+
+  timeGone += 0.009;
+  frame++;
+
+
+  //sleep(3);
+
+  // calc fps
+  endtime = clock();
+  double timeDiff = (endtime - starttime) / (double) CLOCKS_PER_SEC;
+  double fpsTemp = 1 / timeDiff;
+  starttime = endtime;
+
+
+  if (frame >= 25)
+  {
+    fps = (fpsTemp);
+
+    // set window titel
+//            ostringstream stream;
+//            stream << "OpenGl Window - Fps " << fps;
+//            const char* streamO = stream.str().c_str();
+//            SDL_WM_SetCaption(streamO, "");
+    log("FPS: " + to_string(fps));
+
+    frame = 0;
+  }
+}
+
+
+/* -- CREATE SHADER ----------------------------- */
+void createShader()
+{
+  // shader src
+  const GLchar *vertexShader =
+      "#version 100                             \n"
+          "attribute vec3 vertexPos;                                \n"
+          "uniform   mat4 transformMatrix;                          \n" // uniform can be set by cpu
+          "                                                         \n"
+          "void main() {                                            \n"
+          "                                                         \n"
+          "    gl_Position = transformMatrix * vec4(vertexPos, 1.0);\n"
+          "}                                                        \n";
+
+  const GLchar *fragmentShader =
+      "#version 100                             \n"
+          "precision highp float;                   \n"
+          "uniform vec4 color;                      \n" // uniform can be set by cpu
+          "                                         \n"
+          "void main() {                            \n"
+          "                                         \n"
+          "   gl_FragColor =  color;                \n"
+          "}                                        \n";
+
+
+  GLint shaderVertex, shaderFragment;
+
+  // create shader programm
+  HANDEL_SHADER = glCreateProgram();
+  if (HANDEL_SHADER == 0)
+  {
+    log("[ GL ] create shader program [ERR]");
+  }
+  else
+  {
+    log("[ GL ] create shader program [OK]");
+  }
+
+
+  // create shader container --------
+  shaderVertex = glCreateShader(GL_VERTEX_SHADER);   // for vertext-shader
+  shaderFragment = glCreateShader(GL_FRAGMENT_SHADER); // for fragment-shader
+  if (shaderVertex == 0 || shaderFragment == 0)
+  {
+    log("[ GL ] create shader [ERR]");
+  }
+  else
+  {
+    log("[ GL ] create shader [OK]");
+  }
+
+
+  // load shaders into char vars
+  // => not necessary
+
+
+  // load shader into container
+  glShaderSource(shaderVertex, 1, &vertexShader, NULL);
+  glShaderSource(shaderFragment, 1, &fragmentShader, NULL);
+
+
+  // compile shader
+  glCompileShader(shaderVertex);
+  glCompileShader(shaderFragment);
+  checkShaderError(shaderVertex, false, GL_COMPILE_STATUS, "compile vertex shader");
+  checkShaderError(shaderFragment, false, GL_COMPILE_STATUS, "compile fragment shader");
+
+
+  // add shader to programm
+  glAttachShader(HANDEL_SHADER, shaderVertex);
+  glAttachShader(HANDEL_SHADER, shaderFragment);
+
+
+  // bind shader programm to openGl
+  glLinkProgram(HANDEL_SHADER);
+  checkShaderError(HANDEL_SHADER, true, GL_LINK_STATUS, "link shader program");
+
+  glValidateProgram(HANDEL_SHADER);
+  checkShaderError(HANDEL_SHADER, true, GL_VALIDATE_STATUS, "validate shader program");
+
+
+  // get attributes / uniformes
+  HANDEL_SHADER_ATTR_VERTEX = glGetAttribLocation(HANDEL_SHADER, "vertexPos");
+  HANDEL_SHADER_UNI_TRANSFORM = glGetUniformLocation(HANDEL_SHADER, "transformMatrix");
+  HANDEL_SHADER_UNI_COLOR = glGetUniformLocation(HANDEL_SHADER, "color");
+
+  if (HANDEL_SHADER_ATTR_VERTEX == -1
+      || HANDEL_SHADER_UNI_TRANSFORM == -1
+      || HANDEL_SHADER_UNI_COLOR == -1)
+  {
+    log("[ GL ] get Attribute/Uniform [ERR]");
+  }
+  else
+  {
+    log("[ GL ] get Attribute/Uniform [OK]");
+  }
+
+}
+
+
+// -- CHECK SHADER ERROR ----------------------
+void checkShaderError(GLuint shader, bool isProgram, GLint flag, string message)
+{
+  // error var
+  GLint success = GL_FALSE;
+  GLchar errorText[1024] = {0};
+
+
+  // is there an error
+  if (isProgram)
+  {
+    glGetProgramiv(shader, flag, &success);
+  }
+  else
+  {
+    glGetShaderiv(shader, flag, &success);
+  }
+
+
+  // if there is error
+  if (success == GL_FALSE)
+  {
+    if (isProgram)
+      glGetProgramInfoLog(shader, sizeof(errorText), NULL, errorText);
+    else
+      glGetShaderInfoLog(shader, sizeof(errorText), NULL, errorText);
+  }
+
+  // out
+  if (success == GL_FALSE)
+  {
+    log("[ GL ] " + message + " [ERR] '" + errorText + "'");
+  }
+  else
+  {
+    log("[ GL ] " + message + " [OK]");
+  }
+}

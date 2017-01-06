@@ -62,12 +62,14 @@ target_include_directories(${TARGET}
 # Libraries
 #
 target_link_libraries(${TARGET}
-        PRIVATE
+       # PRIVATE
 
-        PUBLIC
+        #PUBLIC
+        #pthread rt freetype GLEW GL SDL2
         ${DEFAULT_LIBRARIES}
         )
-
+message(STATUS LinkLibs: "${DEFAULT_LIBRARIES}")
+message(STATUS LinkLibDir: "${DEPENDENCIES_OpenGL_DIR}")
 
 # ########################################
 #
