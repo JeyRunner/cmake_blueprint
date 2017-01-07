@@ -21,6 +21,7 @@ ANDROID_TOOLCHAIN = 'cmake/android.toolchain.cmake'
 error = False
 packing = True
 androidRun = False
+androidDevice = ""
 androidInstall = False
 clean = True
 rootBuild = ""
@@ -56,6 +57,8 @@ def main(argv):
     clean = options.clean is not None
     androidInstall = options.androidInstall is not None
     androidRun = options.androidRun is not None
+    if androidRun:
+        androidDevice = options.androidRun
 
     rootSrc = os.getcwd()
 

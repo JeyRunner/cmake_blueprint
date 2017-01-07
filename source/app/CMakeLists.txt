@@ -4,11 +4,11 @@ set(SRC)
 
 
 # files
-file(GLOB SRC_FILES
-        ${SOURCE_DIR}*.cpp
-        ${SOURCE_DIR}*.c
-        ${INCLUDE_DIR}*.h)
-
+#file(GLOB SRC_FILES
+#        ${SOURCE_DIR}*.cpp
+#        ${SOURCE_DIR}*.c
+#        ${INCLUDE_DIR}*.h)
+set(SRC_FILES source/main.cpp source/SDL_android_main.c)
 
 set(ANDROID_PACKAGE_NAME "com.blueprint.cmake")
 

@@ -24,6 +24,7 @@ before_install:
 
 install:
   - sudo apt-get install build-essential
+  - sudo apt-get install libglew-dev
 
 script: python build.py --android 16 --native
 

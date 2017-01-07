@@ -46,6 +46,7 @@ GLfloat fps = 0;
 void renderLoop();
 void renderScene();
 void createShader();
+void setViewport(float w, float h);
 void checkShaderError(GLuint shader, bool isProgram, GLint flag, string message);
 
 
@@ -109,6 +110,8 @@ bool createWindow()
 
   // create context
   context = SDL_GL_CreateContext(window);
+  SDL_GL_MakeCurrent(window, context);
+  log("context: " + to_string(context));
 
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
@@ -142,11 +145,22 @@ int main(int argc, char *argv[])
 
   // start render loop
   renderLoop();
+
+
+  // Delete our OpengL context
+  SDL_GL_DeleteContext(context);
+
+  // Destroy our window
+  SDL_DestroyWindow(window);
+
+  // Shutdown SDL 2
+  SDL_Quit();
 }
 
 
 double starttime = 0;
 double endtime = 0;
+double timeTemp = 0;
 float timeGone = 0;
 int frame = 0;
 // transform matrix
@@ -156,14 +170,7 @@ glm::mat4 transformMatrix;
 void renderLoop()
 {
   // resize ortho
-  transformMatrix = glm::ortho(-(float) windowWidth / 2  /* left */,
-                               (float) windowWidth / 2  /* right */,
-                               -(float) windowHeight / 2 /* bottom */,
-                               (float) windowHeight / 2 /* top */,
-
-                               1.0f                     /* zNear */,
-                               -1.0f                     /* zFar */);
-  glViewport(0, 0, windowWidth, windowHeight);
+  setViewport(windowWidth, windowHeight);
 
 
   // sdl event
@@ -190,7 +197,7 @@ void renderLoop()
 
   bool loop = true;
   bool render = true;
-
+  float i =0;
   // render loop
   while (loop)
   {
@@ -203,9 +210,7 @@ void renderLoop()
       {
         case SDL_QUIT:
           log("[END ] close program ");
-          SDL_DestroyWindow(window);
-          SDL_Quit();// close SDL
-          exit(0);    // close program
+          loop = false;
           break;
 
           // event from window
@@ -215,23 +220,8 @@ void renderLoop()
             case SDL_WINDOWEVENT_RESIZED:
               int w = event.window.data1;
               int h = event.window.data2;
-              //SDL_GetWindowSize(window, &w, &h);
-              // out
-              //cout << "[INFO] window height: " << h << "  width: " << w << endl;
-              //cout << "[INEV] window height: " <<  << "  width: " << w << endl;
-              // reset screen
-              //SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE | SDL_DOUBLEBUF);
               //SDL_SetWindowSize(window, w, h);
-              glViewport(0, 0, w, h);
-
-              // resize ortho
-              transformMatrix = glm::ortho(-(float) w / 2  /* left */,
-                                           (float) w / 2  /* right */,
-                                           -(float) h / 2 /* bottom */,
-                                           (float) h / 2 /* top */,
-
-                                           1.0f                     /* zNear */,
-                                           -1.0f                     /* zFar */);
+              setViewport(w, h);
               break;
           }
           break;
@@ -242,9 +232,14 @@ void renderLoop()
           break;
 
 
-        case SDL_APP_WILLENTERFOREGROUND:
+        case SDL_APP_DIDENTERFOREGROUND:
           render = true;
-          log("SDL_APP_WILLENTERFOREGROUND");
+          context = SDL_GL_CreateContext(window);
+          SDL_GL_MakeCurrent(window, context);
+          log("SDL_APP_DIDENTERFOREGROUND");
+          log("glcontext make current: " + to_string(context));
+          //setViewport(windowWidth, windowHeight);
+          createShader();
           break;
 
 
@@ -261,12 +256,14 @@ void renderLoop()
     }
 
 
+
+
     if (render)
     {
       // render
-      log("render");
+      //log("render");
       renderScene();
-      sleep(1);
+      //sleep(1);
     }
   }
 }
@@ -274,6 +271,7 @@ void renderLoop()
 /* -- RENDER ------------------------------------ */
 void renderScene()
 {
+  starttime = clock();
 
   // vertices
   GLfloat vertices[12] = {
@@ -425,13 +423,13 @@ void renderScene()
   // calc fps
   endtime = clock();
   double timeDiff = (endtime - starttime) / (double) CLOCKS_PER_SEC;
-  double fpsTemp = 1 / timeDiff;
+  timeTemp += timeDiff;
   starttime = endtime;
 
 
-  if (frame >= 25)
+  if (frame >= 60)
   {
-    fps = (fpsTemp);
+    fps = 1 / (timeTemp / frame);
 
     // set window titel
 //            ostringstream stream;
@@ -440,8 +438,32 @@ void renderScene()
 //            SDL_WM_SetCaption(streamO, "");
     log("FPS: " + to_string(fps));
 
+    timeTemp = 0;
     frame = 0;
   }
+}
+
+
+void setViewport(float w, float h)
+{
+  log("set glViewport: height: " + to_string(h) + ", width: " + to_string(w));
+  //SDL_GetWindowSize(window, &w, &h);
+  // out
+  //cout << "[INFO] window height: " << h << "  width: " << w << endl;
+  //cout << "[INEV] window height: " <<  << "  width: " << w << endl;
+  // reset screen
+  //SDL_SetVideoMode(w, h, 32, SDL_OPENGL | SDL_RESIZABLE | SDL_DOUBLEBUF);
+  //SDL_SetWindowSize(window, w, h);
+  glViewport(0, 0, w, h);
+
+  // resize ortho
+  transformMatrix = glm::ortho(-(float) w / 2  /* left */,
+                               (float) w / 2  /* right */,
+                               -(float) h / 2 /* bottom */,
+                               (float) h / 2 /* top */,
+
+                               1.0f                     /* zNear */,
+                               -1.0f                     /* zFar */);
 }
 
 

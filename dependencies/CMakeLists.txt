@@ -1,6 +1,4 @@
 # compile dependencies
-# and download first
-execute_process(COMMAND git submodule update --init --recursive)
 
 
 # -- SDL2 -------------------------------------------------
@@ -14,6 +12,7 @@ if (SDL2_FOUND)
     set(DEPENDENCIES_SDL2_LIB SDL2 PARENT_SCOPE)
 else ()
     message(STATUS "DEPENDENCY = SDL2 => NOT found => will compile SDL")
+    execute_process(COMMAND git submodule update --init --recursive dependencies/SDL2)
 
     if (ANDROID)
         set(SDL_STATIC ON CACHE BOOL "Build the static SDL library")
@@ -21,7 +20,7 @@ else ()
         set(DEPENDENCIES_SDL2_LIB SDL2 PARENT_SCOPE)
     else ()
         set(SDL_STATIC OFF CACHE BOOL "Build the static SDL library")
-        set(SDL_SHARED ON  CACHE BOOL "Build the shared SDL library")
+        set(SDL_SHARED ON CACHE BOOL "Build the shared SDL library")
         set(DEPENDENCIES_SDL2_LIB SDL2-2.0 PARENT_SCOPE)
     endif ()
     set(PTHREADS OFF CACHE BOOL "Pthread support")
@@ -45,6 +44,7 @@ if (NOT ANDROID)
         set(DEPENDENCIES_GLEW_LIB GLEW PARENT_SCOPE)
     else ()
         message(STATUS "DEPENDENCY = GLEW => NOT found => will compile GLEW")
+        execute_process(COMMAND git submodule update --init --recursive dependencies/GLEW)
 
         #add_subdirectory(GLEW)
 
