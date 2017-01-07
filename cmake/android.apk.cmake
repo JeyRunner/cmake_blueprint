@@ -64,6 +64,7 @@ set(ANDROID_THIS_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}) # Directory this CMake fil
 macro(android_create_apk name apk_package_name apk_directory libs_directory android_directory assets_directory)
     set(ANDROID_NAME ${name})
     set(ANDROID_APK_PACKAGE ${apk_package_name})
+        message(STATUS api: ${ANDROID_APK_API_LEVEL})
 
     set(ANDROID_BUILD_APK_TARGET    BuildApk)
     set(ANDROID_INSTALL_TARGET      InstallApk)

@@ -109,6 +109,7 @@ def crossAndroid(api, abi):
              "[ANDROID] API '%s'" % api, CYAN)
 
     okABIs = ''
+    errABIS = ''
 
     for abi in abiList:
         chdir('cmake-android/' + abi)
@@ -116,12 +117,15 @@ def crossAndroid(api, abi):
         run(['cmake',
              '-DCMAKE_TOOLCHAIN_FILE=' + ANDROID_TOOLCHAIN,
              '-DANDROID_NATIVE_API_LEVEL=' + api,
+             '-DANDROID_APK_API_LEVEL=' + api,
              '-DANDROID_ABI=' + abi,
              '-DCMAKE_BUILD_TYPE=Debug',
              '' + rootSrc])
         ok = not call(['make'])#, '-j', '8'])
         if ok:
             okABIs += abi + ", "
+        else:
+            errABIS += abi + ", "
 
 
 
@@ -141,8 +145,11 @@ def crossAndroid(api, abi):
 
     setError(okApk)
     print("\n[ANDROID] -- summary ----------------------------------")
-    printOk("[ANDROID] " + ("SUCCESSFULLY build for '" + okABIs + "'" if (okABIs != '') else 'ERROR'), okABIs != '')
-    printOk("[ANDROID] build APK %s " % ('SUCCESSFULLY' if okApk else 'ERROR'), okApk)
+    printOk("[ANDROID] " + ("SUCCESSFULLY build for '" + okABIs + "'" if (okABIs != '') else 'all builds ERROR'), okABIs != '')
+    if errABIS != '':
+        printCol("[ANDROID] " + "ERROR at build for '" + errABIS + "'", RED)
+    if packing:
+        printOk("[ANDROID] build APK %s " % ('SUCCESSFULLY' if okApk else 'ERROR'), okApk)
 
 
 
