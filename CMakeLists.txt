@@ -40,6 +40,7 @@ if (ANDROID)
             build       # general
             build/bin   # bin
             build/lib/${ANDROID_NDK_ABI_NAME}   # lib
+            build/include   # include
             build/lib/${ANDROID_NDK_ABI_NAME}  # archiv
             build/pack  # package / installer / app
     )
