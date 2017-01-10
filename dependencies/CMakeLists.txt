@@ -23,7 +23,7 @@ else ()
         set(SDL_SHARED ON CACHE BOOL "Build the shared SDL library")
         set(DEPENDENCIES_SDL2_LIB SDL2-2.0 PARENT_SCOPE)
     endif ()
-    set(PTHREADS OFF CACHE BOOL "Pthread support")
+    set(PTHREADS ON CACHE BOOL "Pthread support")
     #set(DISKAUDIO  OFF)
     add_subdirectory(SDL2)
 

@@ -65,7 +65,7 @@ def main(argv):
     if clean:
         # remove old
         if os.path.exists('build/'):
-            shutil.rmtree('build/')
+            shutil.rmtree('build/', ignore_errors=True)
 
     # go into build dir
     if not os.path.exists('build/'):
@@ -201,7 +201,7 @@ def cleanCmake():
                 shutil.rmtree(file)
                 # print("remove " + file)
     else:
-        print "NOT Clean"
+        print ("NOT Clean")
 
 
 # ## helper

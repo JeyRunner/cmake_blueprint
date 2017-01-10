@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
+#include <version.h>
 //#include <>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp> // gl Math matix transform
@@ -65,6 +66,15 @@ void log(string text)
   SDL_LogMessage(0, SDL_LOG_PRIORITY_INFO, text.c_str());
 }
 
+void checkSDLError()
+{
+  const char *error = SDL_GetError();
+  if (*error != '\0')
+  {
+    log("SDL Error: " + string(error));
+    SDL_ClearError();
+  }
+}
 
 
 
@@ -78,6 +88,7 @@ bool createWindow()
 
   // init sdl -----------------------------
   error = SDL_Init(SDL_INIT_VIDEO);
+  checkSDLError();
   if (error != 0)
   {
     log("[ERR ] SDL_Init");
@@ -102,7 +113,7 @@ bool createWindow()
                             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                             windowWidth, windowHeight,
                             SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
-
+  checkSDLError();
 
   SDL_GetWindowSize(window, &windowWidth, &windowHeight);
   log("[DISP] get SDL window size, height: " + to_string(windowHeight) + ", windowWidth: " + to_string(windowWidth));
@@ -110,7 +121,9 @@ bool createWindow()
 
   // create context
   context = SDL_GL_CreateContext(window);
+  checkSDLError();
   SDL_GL_MakeCurrent(window, context);
+  checkSDLError();
   log("context: " + to_string(context));
 
 
@@ -118,6 +131,15 @@ bool createWindow()
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8); // 8bit per pixel stacil buffer
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 10);
+  checkSDLError();
+
+  // use vsync
+  SDL_GL_SetSwapInterval(1);
+  checkSDLError();
 
   // init glew
   // not in android
@@ -135,6 +157,7 @@ int main(int argc, char *argv[])
 {
   // output
   log("[ OK ] program start");
+  log("[ OK ] blueprintcmake version " + CMAKE_VERSION);
   createWindow();
 
 
@@ -166,15 +189,87 @@ int frame = 0;
 // transform matrix
 glm::mat4 transformMatrix;
 
+
+bool run = true;
+bool render = true;
+
+/* -- HANDLE EVENT --------------------------------------------- */
+void handleEvent(SDL_Event *event)
+{
+  //log("event: " + event.type);
+  // check for SDL event
+  switch (event->type)
+  {
+    case SDL_QUIT:
+      log("[END ] close program ");
+      run = false;
+      break;
+
+      // event from window
+    case SDL_WINDOWEVENT:
+      switch (event->window.event)
+      {
+        case SDL_WINDOWEVENT_RESIZED:
+          windowWidth = event->window.data1;
+          windowHeight = event->window.data2;
+          //SDL_SetWindowSize(window, w, h);
+          setViewport(windowWidth, windowHeight);
+          break;
+
+
+        case SDL_WINDOWEVENT_MINIMIZED:
+          log("SDL_WINDOWEVENT_MINIMIZED");
+          render = false;
+          break;
+
+        case SDL_WINDOWEVENT_RESTORED:
+          log("SDL_WINDOWEVENT_RESTORED");
+          render = true;
+          break;
+
+
+      }
+      break;
+
+    case SDL_APP_WILLENTERBACKGROUND:
+      render = false;
+      log("SDL_APP_WILLENTERBACKGROUND");
+      break;
+
+
+    case SDL_APP_DIDENTERFOREGROUND:
+      render = true;
+      context = SDL_GL_CreateContext(window);
+      checkSDLError();
+      SDL_GL_MakeCurrent(window, context);
+      checkSDLError();
+      log("SDL_APP_DIDENTERFOREGROUND");
+      setViewport(windowWidth, windowHeight);
+      //setViewport(windowWidth, windowHeight);
+      createShader();
+      break;
+
+
+    case SDL_APP_TERMINATING:
+      run = false;
+      log("SDL_APP_TERMINATING");
+      break;
+
+    case SDL_APP_LOWMEMORY:
+      log("SDL_APP_LOWMEMORY");
+      break;
+  }
+}
+
+
 /* -- RENDER LOOP ---------------------------------------------- */
 void renderLoop()
 {
   // resize ortho
   setViewport(windowWidth, windowHeight);
 
-
   // sdl event
-  SDL_Event event;
+  SDL_Event *event = new SDL_Event;
 
   // output
   log("[....] start render loop");
@@ -182,9 +277,6 @@ void renderLoop()
   // create shader
   createShader();
 
-
-  //while (true);
-  //sleep(6);
 
   SDL_StartTextInput();
   SDL_Rect rect;
@@ -195,75 +287,37 @@ void renderLoop()
   SDL_SetTextInputRect(&rect);
 
 
-  bool loop = true;
-  bool render = true;
-  float i =0;
+
   // render loop
-  while (loop)
+  while (run)
   {
-    // get next SDL event
-    while (SDL_PollEvent(&event))
+    // lock till next event when not need render
+    // example: app is in background
+    if (!render)
     {
-      //log("event: " + event.type);
-      // check for SDL event
-      switch (event.type)
+      if (SDL_WaitEvent(event) > 0)
       {
-        case SDL_QUIT:
-          log("[END ] close program ");
-          loop = false;
-          break;
-
-          // event from window
-        case SDL_WINDOWEVENT:
-          switch (event.window.event)
-          {
-            case SDL_WINDOWEVENT_RESIZED:
-              int w = event.window.data1;
-              int h = event.window.data2;
-              //SDL_SetWindowSize(window, w, h);
-              setViewport(w, h);
-              break;
-          }
-          break;
-
-        case SDL_APP_WILLENTERBACKGROUND:
-          render = false;
-          log("SDL_APP_WILLENTERBACKGROUND");
-          break;
-
-
-        case SDL_APP_DIDENTERFOREGROUND:
-          render = true;
-          context = SDL_GL_CreateContext(window);
-          SDL_GL_MakeCurrent(window, context);
-          log("SDL_APP_DIDENTERFOREGROUND");
-          log("glcontext make current: " + to_string(context));
-          //setViewport(windowWidth, windowHeight);
-          createShader();
-          break;
-
-
-        case SDL_APP_TERMINATING:
-          loop = false;
-          log("SDL_APP_TERMINATING");
-          break;
-
-        case SDL_APP_LOWMEMORY:
-          log("SDL_APP_LOWMEMORY");
-          break;
+        log("end locking");
+        handleEvent(event);
       }
-
+      else
+      {
+        checkSDLError();
+      }
     }
 
-
+    // get all events
+    while (SDL_PollEvent(event))
+    {
+      //log("event" + to_string(event->type));
+      handleEvent(event);
+    }
 
 
     if (render)
     {
       // render
-      //log("render");
       renderScene();
-      //sleep(1);
     }
   }
 }
@@ -446,7 +500,7 @@ void renderScene()
 
 void setViewport(float w, float h)
 {
-  log("set glViewport: height: " + to_string(h) + ", width: " + to_string(w));
+  //log("set glViewport: height: " + to_string(h) + ", width: " + to_string(w));
   //SDL_GetWindowSize(window, &w, &h);
   // out
   //cout << "[INFO] window height: " << h << "  width: " << w << endl;

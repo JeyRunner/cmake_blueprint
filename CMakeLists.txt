@@ -11,10 +11,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "cmake")
 
 # Meta information about the project
 setMetaProject(
-        "bluePrintCmake" "blue print cmake for c++"    # name, descrition
-        1 1 1                                          # version
-        "Joshua Johannson"                              # author
+        "bluePrintCmake"  "CMAKE"               # name, name in headerfile,
+        "blue print cmake for c++"              # descrition
+        1 0 0                                   # default version
+        "Joshua Johannson"                      # author
 )
+
+message(version: ${META_VERSION})
 
 # set project name and output dir
 project(${META_PROJECT_NAME})
@@ -45,6 +48,7 @@ else ()
             build       # general
             build/bin   # bin
             build/lib   # lib
+            build/include   # include
             build/lib  # archiv
             build/pack  # package / installer / app
     )
@@ -101,7 +105,8 @@ set(DEFAULT_INCLUDE_DIRECTORIES
         ${DEPENDENCIES_SDL2_INCLUDE}
         ${DEPENDENCIES_GLEW_INCLUDE}
         ${DEPENDENCIES_OpenGL_INCLUDE}
-        ${DEPENDENCIES_GLM_INCLUDE})
+        ${DEPENDENCIES_GLM_INCLUDE}
+        ${OUTPUT_INCLUDE})
 
 set(DEFAULT_LIBRARIES
         ${DEPENDENCIES_SDL2_LIB}
@@ -112,7 +117,6 @@ set(DEFAULT_LIBRARIES
 
 # source dir
 add_subdirectory(source)
-
 
 # ----------------------------------
 # -- create installer
