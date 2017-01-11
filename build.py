@@ -224,7 +224,6 @@ def chdir(relativePath):
     if not os.path.exists(rootBuild + "/" + relativePath):
         os.makedirs(rootBuild +"/" + relativePath)
     os.chdir(rootBuild +"/" + relativePath)
-    print "CHDIR ------------- " + rootBuild + "/" + relativePath
 
 def setError(ok):
     global error

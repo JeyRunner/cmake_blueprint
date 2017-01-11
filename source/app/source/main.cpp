@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include <version.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 //#include <>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp> // gl Math matix transform
@@ -30,6 +32,7 @@ using namespace std;
 
 
 // -- VAR
+FT_Library  library;
 SDL_Window *window;
 SDL_GLContext context;
 
@@ -158,6 +161,20 @@ int main(int argc, char *argv[])
   // output
   log("[ OK ] program start");
   log("[ OK ] blueprintcmake version " + CMAKE_VERSION);
+
+
+  // init freetype
+  FT_Error error = FT_Init_FreeType( &library );
+  if ( error )
+  {
+    log("[ ERR] freetype init");
+  }
+  else
+  {
+    log("[ OK ] freetype init");
+  }
+
+
   createWindow();
 
 

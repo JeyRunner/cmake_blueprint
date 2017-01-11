@@ -17,7 +17,6 @@ setMetaProject(
         "Joshua Johannson"                      # author
 )
 
-message(version: ${META_VERSION})
 
 # set project name and output dir
 project(${META_PROJECT_NAME})
@@ -93,8 +92,10 @@ if (ANDROID)
 endif ()
 
 
-link_directories(${OUTPUT_LIB}
-        ${DEPENDENCIES_OpenGL_DIR})
+link_directories(
+        ${OUTPUT_LIB}
+        ${DEPENDENCIES_OpenGL_DIR}
+        ${DEPENDENCIES_FREETYPE_DIR})
 
 # ------------------------------------
 # -- Dependences
@@ -107,12 +108,14 @@ set(DEFAULT_INCLUDE_DIRECTORIES
         ${DEPENDENCIES_GLEW_INCLUDE}
         ${DEPENDENCIES_OpenGL_INCLUDE}
         ${DEPENDENCIES_GLM_INCLUDE}
+        ${DEPENDENCIES_FREETYPE_INCLUDE}
         ${OUTPUT_INCLUDE})
 
 set(DEFAULT_LIBRARIES
         ${DEPENDENCIES_SDL2_LIB}
         ${DEPENDENCIES_GLEW_LIB}
         ${DEPENDENCIES_OpenGL_LIB}
+        ${DEPENDENCIES_FREETYPE_LIB}
         )
 
 

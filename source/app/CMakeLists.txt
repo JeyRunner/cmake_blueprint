@@ -69,7 +69,7 @@ target_link_libraries(${TARGET}
         ${DEFAULT_LIBRARIES}
         )
 message(STATUS LinkLibs: "${DEFAULT_LIBRARIES}")
-message(STATUS LinkLibDir: "${DEPENDENCIES_OpenGL_DIR}")
+message(STATUS LinkLibDir: "${DEPENDENCIES_FREETYPE_DIR}")
 
 # ########################################
 #
