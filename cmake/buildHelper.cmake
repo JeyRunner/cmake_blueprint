@@ -27,7 +27,7 @@ function(setMetaProject
     find_package(Git)
     if (GIT_FOUND)
         execute_process(
-                COMMAND ${GIT_EXECUTABLE} describe --tags
+                COMMAND ${GIT_EXECUTABLE} describe --match "v[0-9]*" --tags
                 OUTPUT_VARIABLE VERSION_GIT
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 

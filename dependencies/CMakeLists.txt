@@ -52,7 +52,7 @@ else ()
 endif ()
 
 
-# -- SDL2 -------------------------------------------------
+# -- FREETYPE --------------------------------------------
 find_package(Freetype QUIET)
 
 if (FREETYPE_FOUND)

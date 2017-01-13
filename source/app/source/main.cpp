@@ -66,7 +66,7 @@ std::string to_string(T value)
 
 void log(string text)
 {
-  SDL_LogMessage(0, SDL_LOG_PRIORITY_INFO, text.c_str());
+  SDL_Log("%s", text.c_str());
 }
 
 void checkSDLError()
@@ -160,8 +160,7 @@ int main(int argc, char *argv[])
 {
   // output
   log("[ OK ] program start");
-  log("[ OK ] blueprintcmake version " + CMAKE_VERSION);
-
+  log("[ OK ] blueprintcmake version " + CMAKE_BPRINT_VERSION);
 
   // init freetype
   FT_Error error = FT_Init_FreeType( &library );

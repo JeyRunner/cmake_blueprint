@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "cmake")
 
 # Meta information about the project
 setMetaProject(
-        "bluePrintCmake"  "CMAKE"               # name, name in headerfile,
+        "bluePrintCmake"  "CMAKE_BPRINT"        # name, name in headerfile,
         "blue print cmake for c++"              # descrition
         1 0 0                                   # default version
         "Joshua Johannson"                      # author
